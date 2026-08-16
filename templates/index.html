@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>File Sharing Hub</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body {font-family: Georgia, "Times New Roman", serif;background: linear-gradient(rgba(216, 213, 200, 0.75), rgba(216, 213, 200, 0.75)),url("{{ url_for('static', filename='background.jpg') }}") center/cover no-repeat fixed;color: #222;padding: 30px 20px;line-height: 1.5;}
+        .container{max-width:920px;margin:auto}
+        .alert{padding:10px 14px;margin-bottom:15px;font:700 13px Arial;display:flex;gap:8px;border:1px solid;box-shadow:1px 1px #999}
+        .alert-success{background:#e7f0df;border-color:#71865f;color:#315022}
+        .alert-error{background:#f3dddd;border-color:#9b4b4b;color:#702020}
+        .card{background:#f5f1e6;padding:22px;border:1px solid #8d897d;border-radius:2px;box-shadow:2px 2px #aaa,inset 0 0 0 1px #fff;margin-bottom:20px}
+        h2{color:#173b59;margin-bottom:18px;padding-bottom:8px;font-size:24px;border-bottom:2px solid #173b59}
+        h3{color:#333;margin-bottom:14px;padding-bottom:6px;font-size:19px;border-bottom:1px solid #aaa}
+        .form-row{display:flex;gap:18px;margin-bottom:16px}.form-group{flex:1}
+        label{display:block;margin-bottom:5px;font:700 12px Arial;color:#444}
+        input[type=text],input[type=password],input[type=file]{width:100%;padding:8px 9px;border:1px solid #777;border-radius:1px;font:13px Arial;color:#222;background:#fff;box-shadow:inset 1px 1px 2px #ddd}
+        input:focus{outline:none;border-color:#173b59;background:#fffef2}
+        input[type=file]{background:#e9e6dc;cursor:pointer}
+        button{background:#c4e6ca;color:#050505;border:1px solid #555;border-radius:2px;padding:7px 16px;font:700 13px Arial;cursor:pointer;box-shadow:1px 1px #222,inset 1px 1px #fff}
+        button:hover{background:#d4d4ce}
+        button:active{box-shadow:inset 1px 1px 2px #555;transform:translate(1px,1px)}
+        .table-responsive{overflow-x:auto}
+        table{width:100%;border-collapse:collapse;margin-top:8px;border:1px solid #777;background:#fffdf5}
+        th{background:#294b66;color:#fff;padding:9px 12px;text-align:left;font:700 12px Arial;text-transform:uppercase;border-bottom:2px solid #172e40}
+        td{padding:11px 12px;border-bottom:1px solid #c8c4b8;font:13px Arial;color:#333}
+        tr:nth-child(even) td{background:#eeece3}
+        tr:hover td{background:#fff8d7}
+        td a{color:#00e;text-decoration:underline;font-weight:bold}
+        td a:hover{color:#c00}
+        .delete-box{display:flex;gap:6px;align-items:center}.delete-box input{width:70px;padding:5px 7px;font-size:12px}
+        .btn-delete{background:#e1caca;color:#700;border-color:#8c4b4b;padding:5px 11px;font-size:12px}
+        .btn-delete:hover{background:#d5b3b3}
+        .empty-msg{text-align:center;color:#777;padding:28px 0;font-style:italic}
+        @media(max-width:640px){.form-row{flex-direction:column;gap:14px}body{padding:15px 10px}.card{padding:16px}table{min-width:700px}}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        {% with messages=get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category,message in messages %}
+        <div class="alert alert-{{ category if category!='message' else 'success' }}">
+            <span>{{ '⚠' if category=='error' else '✓' }}</span><span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h2>📁 FILE SHARING HUB</h2>
+            <form method="POST" action="/upload" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>YOUR NAME</label>
+                        <input type="text" name="uploader" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>DELETION PIN (4 DIGITS)</label>
+                        <input type="password" name="pin" placeholder="Set PIN to delete file later" maxlength="4"
+                            pattern="[0-9]{4}" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:18px">
+                    <label>SELECT FILE (MAX 50 MB)</label>
+                    <input type="file" name="file" required>
+                </div>
+                <button type="submit">Upload File</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Available Files &amp; Resources</h3>
+            {% if files %}
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Uploaded By</th>
+                            <th>Size</th>
+                            <th>Date &amp; Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td><a href="/download/{{ file['Filename'] }}">{{ file['Filename'] }}</a></td>
+                            <td>{{ file['Uploaded_By'] }}</td>
+                            <td>{{ file['Size_KB'] }}</td>
+                            <td>{{ file['Upload_Time'] }}</td>
+                            <td>
+                                <form action="/delete/{{ file['Filename'] }}" method="POST" class="delete-box">
+                                    <input type="password" name="pin" placeholder="PIN" maxlength="4" pattern="[0-9]{4}"
+                                        required>
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty-msg">No files uploaded yet. Be the first to share something!</p>
+            {% endif %}
+        </div>
+
+    </div>
+</body>
+
+</html>
