@@ -73,7 +73,7 @@ def upload():
     new_row = pd.DataFrame([{
         "Filename": filename,
         "Uploaded_By": uploader_name if uploader_name else "Anonymous",
-        "Size_KB": file_size_str,
+        "Size": file_size_str,
         "Upload_Time": upload_time,
         "PIN": uploader_pin.zfill(4),
     }])
