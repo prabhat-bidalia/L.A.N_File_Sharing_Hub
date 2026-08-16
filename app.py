@@ -45,18 +45,6 @@ def upload():
     flash("PIN must be exactly 4 digits.", "error")
     return redirect("/")
 
-  if os.path.exists(CSV_FILE) and os.path.getsize(CSV_FILE) > 0:
-    try:
-      df_check = pd.read_csv(CSV_FILE, dtype={"PIN": str})
-      existing_pins = (
-          df_check["PIN"].astype(str).str.strip().str.zfill(4).tolist()
-      )
-      if uploader_pin in existing_pins:
-        flash("This PIN already exists. Please choose a different 4-digit PIN.","error",)
-        return redirect("/")
-    except pd.errors.EmptyDataError:
-      pass
-
   if file_obj and file_obj.filename != "":
     filename = secure_filename(file_obj.filename)
     if not filename:
@@ -73,7 +61,7 @@ def upload():
     new_row = pd.DataFrame([{
         "Filename": filename,
         "Uploaded_By": uploader_name if uploader_name else "Anonymous",
-        "Size": file_size_str,
+        "Size_KB": file_size_str,
         "Upload_Time": upload_time,
         "PIN": uploader_pin.zfill(4),
     }])
