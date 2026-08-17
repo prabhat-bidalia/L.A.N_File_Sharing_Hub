@@ -28,6 +28,7 @@ def index():
     try:
       df = pd.read_csv(CSV_FILE, dtype={"PIN": str})
       df["PIN"] = df["PIN"].astype(str).str.strip().str.zfill(4)
+      df = df.iloc[::-1]
       file_list = df.to_dict(orient="records")
     except pd.errors.EmptyDataError:
       file_list = []
