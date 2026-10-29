@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Register - File Sharing Hub</title>
+    <link rel="stylesheet" href="/static/styles_register.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Top Navigation Link -->
+        <div class="top-bar">
+            <a href="/" class="nav-link">← Back to Home</a>
+        </div>
+
+        {% with messages=get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category,message in messages %}
+        <div class="alert alert-{{ category if category!='message' else 'success' }}">
+            <span>{{ '⚠' if category=='error' else '✓' }}</span><span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h2>📝 User Registration</h2>
+            <form method="POST" action="/register">
+                <div class="form-group">
+                    <label>Choose Username</label>
+                    <input type="text" name="username" placeholder="Enter desired username" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Choose Password</label>
+                    <input type="password" name="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <div class="footer-text">
+                Already registered? <a href="/login">Log in here</a>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
