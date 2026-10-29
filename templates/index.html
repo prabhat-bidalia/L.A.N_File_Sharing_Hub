@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>File Sharing Hub</title>
+    <link rel="stylesheet" href="/static/styles_index.css">
+</head>
+
+<body>
+    <div class="top-bar">
+            {% if session.get('user') %}
+                <span class="user-greeting">👤 {{ session['user'] }}</span>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="/logout" class="nav-link">Logout</a>
+            {% else %}
+                <a href="/login" class="nav-link">Login</a>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="/register" class="nav-link">Register</a>
+            {% endif %}
+        </div>
+    <div class="container">
+
+        {% with messages=get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category,message in messages %}
+        <div class="alert alert-{{ category if category!='message' else 'success' }}">
+            <span>{{ '⚠' if category=='error' else '✓' }}</span><span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% if session.get('user') %}
+        <div class="card">
+            <h2>📁 Upload File</h2>
+            <form method="POST" action="/upload" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Select File (Max 50 MB)</label>
+                    <input type="file" name="file" required>
+                </div>
+                <button type="submit">Upload File</button>
+            </form>
+        </div>
+        <div class="card">
+            <h3>🗂️ MY UPLOADED FILES &amp; RESOURCES</h3>
+            {% if my_files %}
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Date &amp; Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in my_files %}
+                        <tr>
+                            <td><a href="/download/{{ file['Filename'] }}">{{ file['Filename'] }}</a></td>
+                            <td>{{ file['Size_KB'] }}</td>
+                            <td>{{ file['Upload_Time'] }}</td>
+                            <td>
+                                <div class="action-cell">
+                                    <a href="/download/{{ file['Filename'] }}" class="btn-download">Download</a>
+                                    <form action="/delete/{{ file['Filename'] }}" method="POST" style="margin:0;">
+                                        <button type="submit" class="btn-delete">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty-msg">You haven't uploaded any files yet.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="card">
+            {% if session.get('user') %}
+                   <h3> 🌐 OTHER USER's SHARED FILES &amp; RESOURCES</h3>
+                {% else %}
+                   <h3>🌐 ALL SHARED FILES &amp; RESOURCES</h3>     
+                {% endif %}
+            {% set display_files = other_files if session.get('user') else files %}
+            {% if display_files %}
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Uploaded By</th>
+                            <th>Size</th>
+                            <th>Date &amp; Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in display_files %}
+                        <tr>
+                            <td><a href="/download/{{ file['Filename'] }}">{{ file['Filename'] }}</a></td>
+                            <td>{{ file['Uploaded_By'] }}</td>
+                            <td>{{ file['Size_KB'] }}</td>
+                            <td>{{ file['Upload_Time'] }}</td>
+                            <td>
+                                <a href="/download/{{ file['Filename'] }}" class="btn-download">Download</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty-msg">
+                {% if session.get('user') %}
+                    No files shared by other users yet.
+                {% else %}
+                    No files uploaded yet. Be the first to share something once logged in!
+                {% endif %}
+            </p>
+            {% endif %}
+        </div>
+        {% if chart_url %}
+        <div class="card" style="text-align: center;">
+            <h3>📊 File Type Analytics</h3>
+            <img src="data:image/png;base64,{{ chart_url }}" alt="File Types Chart" style="width: 100%; max-width: 600px; height: auto;">
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>
